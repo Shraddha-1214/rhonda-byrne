@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The Architecture of Belief — Rhonda Byrne</title>
+<meta name="description" content="An interactive editorial dossier on Rhonda Byrne, from a $2M production debt to the global phenomenon of The Secret." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          obsidian: '#0D0D11',
+          parchment: '#F4F1EA',
+          brass: '#2A2824',
+          gold: '#D4AF37',
+          crimson: '#991B1B',
+          sage: '#059669'
+        },
+        fontFamily: {
+          display: ['Newsreader', 'serif'],
+          body: ['"Plus Jakarta Sans"', 'sans-serif'],
+          mono: ['"JetBrains Mono"', 'monospace']
+        }
+      }
+    }
+  }
+</script>
+<style>
+  :root{
+    --obsidian:#0D0D11;
+    --obsidian-raised:#141419;
+    --parchment:#F4F1EA;
+    --parchment-dim:#B9B4A6;
+    --brass:#2A2824;
+    --brass-bright:#4A4438;
+    --gold:#D4AF37;
+    --crimson:#991B1B;
+    --sage:#059669;
+  }
+  *{ scrollbar-color: var(--brass-bright) var(--obsidian); }
+  html{ scroll-behavior:smooth; }
+  @media (prefers-reduced-motion: reduce){
+    html{ scroll-behavior:auto; }
+    *{ animation-duration:0.001ms !important; animation-iteration-count:1 !important; transition-duration:0.001ms !important; scroll-behavior:auto !important; }
+  }
+  body{
+    background:var(--obsidian);
+    color:var(--parchment);
+    font-family:'Plus Jakarta Sans', sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.font-display{ font-family:'Newsreader', serif; }
+  .font-mono{ font-family:'JetBrains Mono', monospace; }
+
+  ::selection{ background:var(--gold); color:var(--obsidian); }
+
+  a{ color:inherit; }
+  :focus-visible{ outline:2px solid var(--gold); outline-offset:3px; }
+
+  /* texture: faint paper grain via layered radial gradients */
+  .grain-bg{
+    background-image:
+      radial-gradient(circle at 20% 20%, rgba(212,175,55,0.05), transparent 40%),
+      radial-gradient(circle at 80% 60%, rgba(153,27,27,0.05), transparent 45%),
+      radial-gradient(circle at 50% 90%, rgba(5,150,105,0.04), transparent 40%);
+  }
+
+  /* progress bar */
+  #progress-bar{
+    position:fixed; top:0; left:0; height:3px; width:0%;
+    background:linear-gradient(90deg, var(--crimson), var(--gold));
+    z-index:100; transition:width 80ms linear;
+  }
+
+  /* hairline rules */
+  .hairline{ border-color:var(--brass); }
+  .hairline-bright{ border-color:var(--brass-bright); }
+
+  /* chapter nav */
+  .chapnav-link{
+    display:block; font-family:'JetBrains Mono', monospace; font-size:11px; letter-spacing:.06em;
+    text-transform:uppercase; color:var(--parchment-dim); padding:8px 0 8px 16px;
+    border-left:2px solid var(--brass); transition:color 160ms ease, border-color 160ms ease;
+  }
+  .chapnav-link:hover{ color:var(--parchment); border-color:var(--brass-bright); }
+  .chapnav-link.active{ color:var(--gold); border-color:var(--gold); }
+
+  .pill{
+    font-family:'JetBrains Mono', monospace; font-size:11px; letter-spacing:.04em;
+    padding:7px 14px; border:1px solid var(--brass-bright); border-radius:999px;
+    color:var(--parchment-dim); background:transparent; cursor:pointer;
+    transition:all 160ms ease; white-space:nowrap;
+  }
+  .pill:hover{ color:var(--parchment); border-color:var(--gold); }
+  .pill.active{ color:var(--obsidian); background:var(--gold); border-color:var(--gold); font-weight:600; }
+
+  /* timeline */
+  .ledger-line{ background:linear-gradient(180deg, transparent, var(--brass-bright) 8%, var(--brass-bright) 92%, transparent); }
+  .ledger-node{ box-shadow:0 0 0 4px var(--obsidian); }
+  .timeline-item{ transition:opacity 220ms ease, max-height 220ms ease; }
+  .timeline-item.hidden-item{ display:none; }
+  .timeline-item.flash{ animation:flash-hl 1400ms ease; }
+  @keyframes flash-hl{
+    0%{ box-shadow:0 0 0 1px var(--gold); }
+    100%{ box-shadow:0 0 0 0 transparent; }
+  }
+
+  .tone-neutral{ --tone-color: var(--brass-bright); }
+  .tone-gold{ --tone-color: var(--gold); }
+  .tone-crisis{ --tone-color: var(--crimson); }
+  .tone-sage{ --tone-color: var(--sage); }
+  .tone-border{ border-left-color:var(--tone-color) !important; }
+  .tone-dot{ background:var(--tone-color) !important; }
+  .tone-text{ color:var(--tone-color) !important; }
+
+  /* question cards */
+  .qcard{
+    background:var(--obsidian-raised); border:1px solid var(--brass);
+    transition:border-color 180ms ease, transform 180ms ease;
+  }
+  .qcard:hover{ border-color:var(--brass-bright); }
+  .copy-btn{
+    font-family:'JetBrains Mono', monospace; font-size:10.5px; letter-spacing:.04em;
+    color:var(--parchment-dim); border:1px solid var(--brass-bright); border-radius:6px;
+    padding:5px 10px; background:transparent; cursor:pointer; transition:all 150ms ease;
+  }
+  .copy-btn:hover{ color:var(--gold); border-color:var(--gold); }
+  .copy-btn.copied{ color:var(--obsidian); background:var(--sage); border-color:var(--sage); }
+
+  .pause-marker{
+    display:inline-flex; align-items:center; gap:5px; font-family:'JetBrains Mono', monospace;
+    font-size:10px; letter-spacing:.06em; color:var(--gold); border:1px dashed var(--gold);
+    border-radius:5px; padding:2px 7px;
+  }
+  @keyframes bar-pulse{ 0%,100%{ transform:scaleY(.4);} 50%{ transform:scaleY(1);} }
+  .wavebar{ display:inline-block; width:2px; height:9px; background:var(--gold); animation:bar-pulse 900ms ease-in-out infinite; }
+  .wavebar:nth-child(2){ animation-delay:120ms; }
+  .wavebar:nth-child(3){ animation-delay:240ms; }
+
+  /* source cards */
+  .source-card{ background:var(--obsidian-raised); border:1px solid var(--brass); transition:border-color 160ms ease, transform 160ms ease; }
+  .source-card:hover{ border-color:var(--gold); transform:translateY(-2px); }
+
+  input[type="search"]::-webkit-search-cancel-button{ display:none; }
+  input[type="range"]{ -webkit-appearance:none; appearance:none; height:2px; background:var(--brass-bright); border-radius:999px; }
+  input[type="range"]::-webkit-slider-thumb{
+    -webkit-appearance:none; appearance:none; width:14px; height:14px; border-radius:50%;
+    background:var(--gold); cursor:pointer; border:2px solid var(--obsidian);
+  }
+  input[type="range"]::-moz-range-thumb{ width:14px; height:14px; border-radius:50%; background:var(--gold); cursor:pointer; border:2px solid var(--obsidian); }
+
+  .drop-cap:first-letter{
+    font-family:'Newsreader', serif; float:left; font-size:3.6rem; line-height:0.85;
+    padding-right:10px; padding-top:4px; color:var(--gold); font-weight:500;
+  }
+
+  .fade-up{ animation:fadeUp 700ms ease both; }
+  @keyframes fadeUp{ from{ opacity:0; transform:translateY(14px);} to{ opacity:1; transform:translateY(0);} }
+</style>
+</head>
+<body class="grain-bg">
+
+<div id="progress-bar"></div>
+
+<!-- MOBILE TOP BAR / CHAPTER NAV -->
+<div class="md:hidden sticky top-0 z-40 bg-obsidian/95 backdrop-blur border-b hairline">
+  <div class="flex gap-1 overflow-x-auto px-4 py-2.5 no-scrollbar" id="mobile-chapnav">
+    <a href="#prologue" class="chapnav-link border-l-0 pl-0 pr-4">Prologue</a>
+    <a href="#chronology" class="chapnav-link border-l-0 pl-0 pr-4">Chronology</a>
+    <a href="#questions" class="chapnav-link border-l-0 pl-0 pr-4">75 Questions</a>
+    <a href="#sources" class="chapnav-link border-l-0 pl-0 pr-4">Sources</a>
+    <a href="#reels" class="chapnav-link border-l-0 pl-0 pr-4">Reel Concepts</a>
+  </div>
+</div>
+
+<!-- DESKTOP CHAPTER NAV -->
+<nav class="hidden md:block fixed left-8 top-1/2 -translate-y-1/2 z-40 w-44" aria-label="Chapter index">
+  <p class="font-mono text-[10px] tracking-[.15em] text-parchment-dim/70 mb-3 uppercase">Index</p>
+  <a href="#prologue" class="chapnav-link" data-nav>Prologue</a>
+  <a href="#chronology" class="chapnav-link" data-nav>Chronology</a>
+  <a href="#questions" class="chapnav-link" data-nav>75 Questions</a>
+  <a href="#sources" class="chapnav-link" data-nav>Primary Sources</a>
+  <a href="#reels" class="chapnav-link" data-nav>Reel Concepts</a>
+</nav>
+
+<!-- HERO -->
+<header class="relative px-6 md:px-0 pt-20 pb-16 md:pt-28 md:pb-24 border-b hairline">
+  <div class="max-w-3xl mx-auto md:pl-8">
+    <p class="font-mono text-[11px] tracking-[.2em] uppercase text-gold mb-6">
+      1951—2026 &nbsp;·&nbsp; Melbourne → Global &nbsp;·&nbsp; An Interactive Editorial Dossier
+    </p>
+    <h1 class="font-display text-[2.1rem] leading-[1.15] sm:text-5xl md:text-6xl font-medium mb-6">
+      The Architecture <br class="hidden sm:block"/>of Belief
+    </h1>
+    <p class="font-display italic text-xl md:text-2xl text-parchment-dim mb-8 leading-snug">
+      Rhonda Byrne — from a $2 million production debt and a father's death, to <span class="text-parchment">The Secret</span> and its afterlife.
+    </p>
+    <div class="flex flex-wrap gap-x-6 gap-y-2 font-mono text-xs text-parchment-dim border-t hairline pt-5">
+      <span>18 verified milestones</span>
+      <span class="text-brass-bright">·</span>
+      <span>75 original interview prompts</span>
+      <span class="text-brass-bright">·</span>
+      <span>8 primary sources</span>
+    </div>
+  </div>
+</header>
+
+<main class="px-6 md:px-0">
+<div class="max-w-3xl mx-auto md:pl-8">
+
+  <!-- PROLOGUE -->
+  <section id="prologue" class="py-16 md:py-20 border-b hairline scroll-mt-24">
+    <p class="font-mono text-xs tracking-[.15em] uppercase text-gold mb-4">01 — Prologue</p>
+    <p class="font-body text-[17px] leading-[1.85] text-parchment/90 drop-cap">
+      Every account of Rhonda Byrne collapses two stories into one: a television producer's very ordinary financial crisis, and the birth of one of the best-selling self-help franchises in publishing history. This dossier keeps both stories visible at once. What follows is built from Byrne's own on-record interviews, contemporaneous reporting, publisher records, and encyclopedic sources — not from a completed interview. Figures that are disputed across sources (the exact number of people interviewed for the original film, for instance) are presented as ranges rather than false precision.
+    </p>
+    <p class="font-body text-[17px] leading-[1.85] text-parchment/90 mt-5">
+      The 75 questions in the interview architecture below are original prompts, written for a hypothetical long-form, curiosity-led conversation. They are not transcript excerpts, and no answers are attributed to Byrne — the point of a good pre-interview document is to map the terrain, not to write the guest's lines for her.
+    </p>
+  </section>
+
+  <!-- CHRONOLOGY -->
+  <section id="chronology" class="py-16 md:py-20 border-b hairline scroll-mt-24">
+    <p class="font-mono text-xs tracking-[.15em] uppercase text-gold mb-2">02 — Chronology</p>
+    <h2 class="font-display text-3xl md:text-4xl mb-2">The Ledger</h2>
+    <p class="text-parchment-dim text-sm mb-8 max-w-xl">Eighteen milestones, filterable by lens. Colour marks tone: <span class="tone-text tone-crisis font-mono">crimson</span> for crisis, <span class="tone-text tone-gold font-mono">gold</span> for a manifestation-era milestone, <span class="tone-text tone-sage font-mono">sage</span> for the later awareness/non-duality turn.</p>
+
+    <div class="flex flex-wrap gap-2 mb-6" id="timeline-filters">
+      <button class="pill active" data-filter="all">All</button>
+      <button class="pill" data-filter="career">Career</button>
+      <button class="pill" data-filter="film">Film Production</button>
+      <button class="pill" data-filter="philosophy">Philosophy</button>
+      <button class="pill" data-filter="books">Books</button>
+    </div>
+
+    <div class="mb-10 pb-8 border-b hairline">
+      <div class="flex justify-between font-mono text-[10px] text-parchment-dim mb-2">
+        <span>1951</span><span>Jump to year</span><span>2026</span>
+      </div>
+      <input type="range" min="1951" max="2026" value="1951" step="1" id="year-slider" class="w-full" aria-label="Scrub timeline by year" />
+    </div>
+
+    <div class="relative pl-8" id="timeline-container">
+      <div class="ledger-line absolute left-[7px] top-0 bottom-0 w-px"></div>
+      <!-- timeline items injected here -->
+    </div>
+  </section>
+
+  <!-- QUESTIONS -->
+  <section id="questions" class="py-16 md:py-20 border-b hairline scroll-mt-24">
+    <p class="font-mono text-xs tracking-[.15em] uppercase text-gold mb-2">03 — Interview Architecture</p>
+    <h2 class="font-display text-3xl md:text-4xl mb-2">75 Questions, Five Acts</h2>
+    <p class="text-parchment-dim text-sm mb-8 max-w-xl">Direct, grounded, curious — written for a long-form conversational format. Search instantly, filter by act, or copy any prompt straight into your notes.</p>
+
+    <div class="sticky top-0 md:top-4 z-30 bg-obsidian/95 backdrop-blur pt-1 pb-4 -mx-1 px-1">
+      <div class="relative mb-4">
+        <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-parchment-dim" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="search" id="q-search" placeholder="Search the 75 questions — try “debt”, “Oprah”, “meditation”…"
+          class="w-full bg-obsidian-raised border hairline-bright focus:border-gold rounded-lg pl-10 pr-4 py-3 text-sm font-body placeholder:text-parchment-dim/60 outline-none" />
+      </div>
+      <div class="flex flex-wrap gap-2" id="act-filters">
+        <button class="pill active" data-act="all">All acts</button>
+      </div>
+      <p class="font-mono text-[11px] text-parchment-dim mt-3" id="q-count"></p>
+    </div>
+
+    <div id="questions-container" class="mt-2 space-y-4"></div>
+  </section>
+
+  <!-- SOURCES -->
+  <section id="sources" class="py-16 md:py-20 border-b hairline scroll-mt-24">
+    <p class="font-mono text-xs tracking-[.15em] uppercase text-gold mb-2">04 — Media Vault</p>
+    <h2 class="font-display text-3xl md:text-4xl mb-2">Primary &amp; Verifying Sources</h2>
+    <p class="text-parchment-dim text-sm mb-8 max-w-xl">Every biographical claim above traces back to one of these. Open any card to read the original.</p>
+    <div id="sources-container" class="grid sm:grid-cols-2 gap-4"></div>
+  </section>
+
+  <!-- REEL CONCEPTS -->
+  <section id="reels" class="py-16 md:py-20 scroll-mt-24">
+    <p class="font-mono text-xs tracking-[.15em] uppercase text-gold mb-2">05 — For Editors</p>
+    <h2 class="font-display text-3xl md:text-4xl mb-2">Short-Form Concepts</h2>
+    <p class="text-parchment-dim text-sm mb-8 max-w-xl">Topic maps for two reels — a hook and the beats worth drawing out on camera. Not scripted dialogue: the real answer should come from the real conversation, in the guest's own words.</p>
+
+    <div class="grid md:grid-cols-2 gap-5">
+      <div class="qcard rounded-xl p-6">
+        <p class="font-mono text-[11px] tracking-widest text-gold mb-3">REEL 01</p>
+        <h3 class="font-display text-xl mb-3">The Misconception of Manifestation</h3>
+        <p class="text-sm text-parchment-dim mb-4"><span class="text-parchment font-medium">Hook line:</span> is manifestation just wishful thinking for people who don't want to do the work?</p>
+        <p class="text-sm text-parchment-dim mb-2"><span class="text-parchment font-medium">Beats to draw out on camera:</span></p>
+        <ul class="text-sm text-parchment/90 space-y-1.5 list-disc list-inside">
+          <li>The gap between a passing wish and a subconscious belief</li>
+          <li>Why visualization without aligned daily action tends to collapse</li>
+          <li>The specific burnout pattern of "action without alignment"</li>
+        </ul>
+      </div>
+      <div class="qcard rounded-xl p-6">
+        <p class="font-mono text-[11px] tracking-widest text-gold mb-3">REEL 02</p>
+        <h3 class="font-display text-xl mb-3">How to Stop Chronic Overthinking</h3>
+        <p class="text-sm text-parchment-dim mb-4"><span class="text-parchment font-medium">Hook line:</span> what's the fastest way to interrupt a spiral of anxious thought?</p>
+        <p class="text-sm text-parchment-dim mb-2"><span class="text-parchment font-medium">Beats to draw out on camera:</span></p>
+        <ul class="text-sm text-parchment/90 space-y-1.5 list-disc list-inside">
+          <li>Noticing a thought versus being the thought</li>
+          <li>A short pause-and-name technique as a disidentification tool</li>
+          <li>Why the goal is disidentification, not suppression</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <footer class="py-14 border-t hairline">
+    <p class="font-mono text-[11px] leading-relaxed text-parchment-dim max-w-2xl">
+      METHODOLOGY — Biographical claims are drawn from Wikipedia, IMDb, TIME, Salon, HarperCollins/HarperOne, thesecret.tv, and Byrne's own recent interviews (linked above). Figures such as sales totals and interview-subject counts vary across outlets and are reported as the most consistent figures found, not as exact audited numbers. The 75 questions are original editorial prompts for a hypothetical interview and are not quotations from, or endorsed by, any real broadcaster or by Rhonda Byrne.
+    </p>
+  </footer>
+
+</div>
+</main>
+
+<script>
+(function(){
+
+  /* ---------------- DATA ---------------- */
+
+  const TIMELINE = [
+    { year:'1951', category:'career', tone:'neutral', title:'Born Rhonda Izon, Melbourne', body:'Born March 12, 1951 in Melbourne, Australia, to Ronald and Irene Izon — the household she would later describe as modest but close.' },
+    { year:'1970s–2004', category:'career', tone:'neutral', title:'Decades in Australian broadcast', body:'Career begins in radio, then moves into television production. Runs Prime Time Productions, with credits including Oz Encounters: UFO\'s in Australia (1997), Loves Me, Loves Me Not (2003), and World\'s Greatest Commercials (1995–2004).' },
+    { year:'2004', category:'career', tone:'crisis', title:'Father\'s death, company debt', body:'Her father Ronald dies as her production company — mid-way through the troubled true-crime series Sensing Murder — slides toward roughly $2 million in debt. Byrne later describes being about thirty days from bankruptcy.' },
+    { year:'2004', category:'philosophy', tone:'gold', title:'The catalyst book', body:'Daughter Hayley hands her a copy of Wallace D. Wattles\' The Science of Getting Rich (1910) — nearly a century old at the time. Byrne says she read it in one sitting and began tracing a common thread through New Thought writers, Emerson, and others.' },
+    { year:'Early 2005', category:'career', tone:'neutral', title:'Betting the house', body:'By her own account, Byrne maxes out her credit lines, mortgages her home to the limit, and takes overdrafts against the company to fund an independent production — while still trying to keep Prime Time Productions solvent.' },
+    { year:'2005', category:'film', tone:'neutral', title:'The U.S. shoot', body:'A small crew travels across the United States to interview several dozen authors, teachers and self-help figures — among them Bob Proctor, Joe Vitale, John Assaraf and Jack Canfield — for what becomes The Secret. Editing continues under real financial strain.' },
+    { year:'Mar 2006', category:'film', tone:'gold', title:'The Secret premieres online', body:'The film premieres via internet streaming on March 23, 2006, distributed by Prime Time Productions — ahead of any printed edition, an unusual release order for the time. A DVD release follows quickly.' },
+    { year:'Nov 2006', category:'books', tone:'neutral', title:'The book is published', body:'The companion book The Secret is published by Atria/Beyond Words, an imprint of Simon & Schuster.' },
+    { year:'2006', category:'film', tone:'gold', title:'Oprah devotes two episodes', body:'Oprah Winfrey features The Secret across two episodes of her show, helping push the book to the top of U.S. bestseller lists by early 2007.' },
+    { year:'May 2007', category:'career', tone:'gold', title:'TIME 100 recognition', body:'Byrne is named to TIME\'s "100 Most Influential People" list and shortly after appears on Forbes\' "Celebrity 100."' },
+    { year:'2007', category:'career', tone:'crisis', title:'Scrutiny and backlash', body:'With commercial success comes sustained criticism — Salon and others attack the philosophy as "toxic positivity," and reporting around a reader who credited the book\'s ideas in her decision to forgo conventional cancer treatment draws sharp scrutiny of the framework\'s limits.' },
+    { year:'2010', category:'books', tone:'neutral', title:'The Power', body:'A sequel focused on emotional frequency and love; another New York Times bestseller, later available in dozens of languages.' },
+    { year:'2012', category:'books', tone:'neutral', title:'The Magic', body:'Structured around a 28-day daily gratitude practice.' },
+    { year:'2013', category:'books', tone:'neutral', title:'Hero &amp; The Secret Daily Teachings', body:'Two further additions to the series, the latter a hardcover collection of daily reflections.' },
+    { year:'2016', category:'books', tone:'neutral', title:'How The Secret Changed My Life', body:'A compilation of reader-submitted stories from the decade since the original book\'s release.' },
+    { year:'2020', category:'film', tone:'neutral', title:'The Secret: Dare to Dream', body:'A narrative feature film loosely inspired by the book, directed by Andy Tennant and starring Katie Holmes and Josh Lucas, reaches theaters and streaming.' },
+    { year:'Nov 2020', category:'philosophy', tone:'sage', title:'The Greatest Secret', body:'Published fourteen years, almost to the day, after the original. A deliberate pivot from material manifestation toward non-duality and "pure awareness," built on teachers including Ramana Maharshi, Nisargadatta Maharaj, Sailor Bob Adamson, Byron Katie and Eckhart Tolle.' },
+    { year:'2021–2026', category:'philosophy', tone:'sage', title:'Continuing the awareness thread', body:'Further releases — including The Secret to Love, Health and Money: A Masterclass and a Secret Manifestation Cards deck — alongside on-record interviews revisiting the 2004 crisis from twenty years\' distance.' }
+  ];
+
+  const ACTS = [
+    { id:1, title:'Rock Bottom, Grief &amp; the $2M Debt', short:'Act I', range:'Q1–15' },
+    { id:2, title:'The Making of "The Secret" &amp; the Oprah Moment', short:'Act II', range:'Q16–30' },
+    { id:3, title:'The Hard Criticisms &amp; Toxic Positivity', short:'Act III', range:'Q31–45' },
+    { id:4, title:'From Material Success to Pure Awareness', short:'Act IV', range:'Q46–60' },
+    { id:5, title:'Practical Playbooks for Modern Youth', short:'Act V', range:'Q61–75' }
+  ];
+
+  const QUESTIONS = [
+    // ACT 1
+    {id:1,act:1,pause:false,text:"In 2004 you were burying your father and your production company was reportedly two million dollars in debt at the same time. When your daughter Hayley put that Wallace Wattles paperback — nearly a century old — in your hands, did any part of you believe it would actually help, or were you just too exhausted to say no?"},
+    {id:2,act:1,pause:false,text:"What did your father, Ronald, actually value in you? Is there a specific thing he said or did that you still measure yourself against?"},
+    {id:3,act:1,pause:false,text:"Burnout doesn't always look like crying on the floor — sometimes a body just quietly stops cooperating. What went first for you that year: sleep, appetite, temper?"},
+    {id:4,act:1,pause:false,text:"You've said you maxed out every credit card and mortgaged your home to the limit to keep the production going. What was the actual conversation with your accountant like — the one where you told him to keep the company afloat no matter what?"},
+    {id:5,act:1,pause:false,text:"Fear has a physical address in most people's bodies — a tight chest, a clenched jaw, a knot in the stomach. Where did you carry yours that year?"},
+    {id:6,act:1,pause:false,text:"You were shooting on a strained budget in the U.S. Was there a specific week you genuinely thought, this doesn't get made?"},
+    {id:7,act:1,pause:false,text:"What's the difference between the version of you who read The Science of Getting Rich in one sitting, in tears, and the version of you a month earlier who might have put it down after two pages?"},
+    {id:8,act:1,pause:false,text:"Grief and financial panic don't take turns — they arrive together. Which one did you actually deal with first, and which one did you just postpone?"},
+    {id:9,act:1,pause:true,text:"What did you actually tell your daughters during the worst of it? Did they know how bad the money situation really was?"},
+    {id:10,act:1,pause:false,text:"You'd spent decades as a producer managing other people's crises on camera — true crime, UFO documentaries. Did that professional distance help or hurt you when the crisis became your own?"},
+    {id:11,act:1,pause:false,text:"Is there a specific bill, a specific overdraft notice, a specific phone call from a bank, whose exact wording you still remember?"},
+    {id:12,act:1,pause:false,text:"People like a clean version of 'hitting rock bottom.' What's the part of that year that never makes it into an interview because it wasn't inspiring, it was just bad?"},
+    {id:13,act:1,pause:false,text:"You've described giving money away during that period, even while deep in debt. What did that first attempt at generosity-in-scarcity feel like, mechanically, before it felt spiritual?"},
+    {id:14,act:1,pause:false,text:"Your mother was struggling badly with your father's death too. How much of your own collapse were you allowed to have, when you were also supposed to be holding her up?"},
+    {id:15,act:1,pause:false,text:"If your 2004 self, sitting at that lowest point, could see where you'd end up twenty years later, would she believe it — or assume you were lying to feel better?"},
+    // ACT 2
+    {id:16,act:2,pause:false,text:"You put together a crew and flew to the U.S. to interview dozens of thinkers on a shoestring budget. What was the actual moment during editing — in a rented space, banks circling — where you almost pulled the plug?"},
+    {id:17,act:2,pause:false,text:"Walk me through the real decision to release the film by streaming, pay-per-view, before there was any book. That wasn't the standard playbook in 2006 — what made you bet on it?"},
+    {id:18,act:2,pause:false,text:"Bob Proctor, Joe Vitale, John Assaraf — how do you go from several dozen interviews down to the handful of people who make the final cut?"},
+    {id:19,act:2,pause:false,text:"Is there someone you interviewed whose segment never made the film, but whose ideas shaped your thinking anyway?"},
+    {id:20,act:2,pause:false,text:"What's the real story of how Oprah's team first got in touch — a call, an email, a mutual contact?"},
+    {id:21,act:2,pause:true,text:"You went from struggling to make payroll to sitting on Oprah's stage within a couple of years. What's the physical sensation of that gap closing, in real time, under studio lights?"},
+    {id:22,act:2,pause:false,text:"TIME's '100 Most Influential People' list put you next to heads of state and Nobel laureates. Did that feel earned, or did it feel like a category error?"},
+    {id:23,act:2,pause:false,text:"How did sudden wealth change the way people around you — friends, extended family, even your own crew — behaved toward you?"},
+    {id:24,act:2,pause:false,text:"Was there a specific request from a stranger, after everything blew up, that genuinely unsettled you?"},
+    {id:25,act:2,pause:false,text:"Who told you no during the making of this — a distributor, a broadcaster, a bank — and were they wrong?"},
+    {id:26,act:2,pause:false,text:"The book eventually outsold the film by a huge margin. Did you expect print to become the primary artifact, or did you think of the film as the main event?"},
+    {id:27,act:2,pause:false,text:"You'd spent your whole career telling other people's stories on television. What was actually different about becoming the story yourself?"},
+    {id:28,act:2,pause:false,text:"Is there a single cut — a scene, a line — from the original film you'd now put back in?"},
+    {id:29,act:2,pause:false,text:"When did you first realize this wasn't going to be a modest Australian success story, but something closer to a global phenomenon?"},
+    {id:30,act:2,pause:false,text:"Looking back at the version of you who mortgaged her house for this, what would you actually say to her now?"},
+    // ACT 3
+    {id:31,act:3,pause:false,text:"Critics have long asked: if thoughts attract circumstances, does that mean people living in poverty or conflict attracted their own pain? How do you actually answer people who call the framework dangerous?"},
+    {id:32,act:3,pause:false,text:"Where's the line between wishing for something and actually believing it at a subconscious level? Most people can't tell the difference in themselves."},
+    {id:33,act:3,pause:false,text:"Why does visualizing a bank balance, without the unglamorous daily work behind it, usually just not work?"},
+    {id:34,act:3,pause:false,text:"Some readers took this to mean they shouldn't feel negative emotion at all. Where's the line between processing a hard feeling and drowning in it?"},
+    {id:35,act:3,pause:false,text:"There was real, well-documented controversy around a reader who said she'd forgo conventional cancer treatment because of ideas connected to the Law of Attraction. What went through your mind when stories like that surfaced?"},
+    {id:36,act:3,pause:false,text:"When a physicist tells you the Law of Attraction has no basis in physics, what's your actual answer — not the marketing answer?"},
+    {id:37,act:3,pause:false,text:"The Reticular Activating System gets cited a lot to explain manifestation in psychological terms. In your own head, where does that legitimate psychology end and the spiritual claim begin?"},
+    {id:38,act:3,pause:false,text:"What's a specific criticism of your work — not a strawman version of it — that you've actually sat with and found some truth in?"},
+    {id:39,act:3,pause:false,text:"Is there a version of this philosophy that genuinely fails people in poverty or crisis, versus one that's simply been misread?"},
+    {id:40,act:3,pause:true,text:"How do you respond to someone who says the whole framework quietly blames people for their own suffering?"},
+    {id:41,act:3,pause:false,text:"Have you ever had a direct conversation with someone who made a genuinely bad decision because of how they read your book? What did that conversation look like?"},
+    {id:42,act:3,pause:false,text:"Two decades of relentless public skepticism — is there one specific critique that actually changed how you write or teach?"},
+    {id:43,act:3,pause:false,text:"In your own practice, what's the difference between gratitude as a coping mechanism and gratitude as denial?"},
+    {id:44,act:3,pause:false,text:"Who's a skeptic you actually respect, even though they've been openly critical of your work?"},
+    {id:45,act:3,pause:false,text:"If you had to rewrite one paragraph of the original book today, knowing everything you know now, which one, and why?"},
+    // ACT 4
+    {id:46,act:4,pause:false,text:"The Secret focused heavily on attracting wealth, houses, and health. The Greatest Secret shifts entirely to awareness and letting go of ego. What did having all the money and fame in the world teach you that poverty couldn't?"},
+    {id:47,act:4,pause:true,text:"You've said wealthy, outwardly successful people can still carry deep depression. What did money actually fail to fix for you, specifically?"},
+    {id:48,act:4,pause:false,text:"What does 'observing a thought instead of fighting it' actually look like, mechanically, step by step, on a bad day?"},
+    {id:49,act:4,pause:false,text:"Ramana Maharshi's teachings run heavily through The Greatest Secret. What's the one idea of his that took you the longest to actually understand, rather than just repeat?"},
+    {id:50,act:4,pause:false,text:"Is there a difference between the peace you felt right after The Secret succeeded and the peace you describe now, decades later?"},
+    {id:51,act:4,pause:false,text:"What did chronic anxiety actually feel like from the inside, in the years before you found a way to work with it instead of against it?"},
+    {id:52,act:4,pause:false,text:"Walk me through your actual meditation practice today — not the philosophy behind it, the literal routine."},
+    {id:53,act:4,pause:false,text:"Was there a specific moment you can point to where the shift from 'attracting things' to 'awareness itself' happened, or was it gradual?"},
+    {id:54,act:4,pause:false,text:"Nisargadatta Maharaj and Sailor Bob Adamson are a long way from Oprah's daytime audience. Were you worried this book would alienate the readers who made you famous in the first place?"},
+    {id:55,act:4,pause:false,text:"What's something you believed completely in 2007 that you'd now describe as a beginner's misunderstanding?"},
+    {id:56,act:4,pause:false,text:"How do you tell the difference between genuinely accepting a painful situation and simply giving up on changing it?"},
+    {id:57,act:4,pause:false,text:"Is there a teacher whose ideas you initially rejected and later came back to?"},
+    {id:58,act:4,pause:false,text:"What does 'ego' actually mean to you in practice, stripped of the jargon?"},
+    {id:59,act:4,pause:false,text:"Do you think the version of you in 2004, mortgaging her house, would even recognize the framework you teach now?"},
+    {id:60,act:4,pause:false,text:"What's the hardest part of teaching non-duality to an audience that first found you through a book about manifesting cars and houses?"},
+    // ACT 5
+    {id:61,act:5,pause:false,text:"For a 22-year-old watching this who is anxious about their career, dealing with low self-esteem, and living in a noisy small home with no capital — what's the exact mental and practical ritual they should try tomorrow morning, for ten minutes?"},
+    {id:62,act:5,pause:false,text:"What's the actual first move for someone who wants to rewire a habit of negative self-talk, starting today, not eventually?"},
+    {id:63,act:5,pause:false,text:"What do you say to someone whose own family actively discourages them, at the dinner table, every single day?"},
+    {id:64,act:5,pause:false,text:"Is there real evidence behind gratitude journaling, or is it a habit that happens to work for unrelated reasons?"},
+    {id:65,act:5,pause:false,text:"How do you build focus when your phone is engineered by entire teams specifically to fragment your attention?"},
+    {id:66,act:5,pause:false,text:"What's your actual definition of a fulfilled life — the one you'd give a 22-year-old, not the one that fits on a poster?"},
+    {id:67,act:5,pause:false,text:"Is there a difference between ambition that comes from insecurity and ambition that comes from genuine desire? How would a young person even tell?"},
+    {id:68,act:5,pause:false,text:"What's the single most common mistake you see in how young people try to apply 'manifestation' to their careers specifically?"},
+    {id:69,act:5,pause:false,text:"How much of self-belief is actually just accumulating small proof points over time, versus a purely internal shift?"},
+    {id:70,act:5,pause:false,text:"What should someone actually do in the first ten minutes after a rejection — a job, a relationship — that isn't just 'stay positive'?"},
+    {id:71,act:5,pause:false,text:"Is there a version of visualization that genuinely works for someone with zero capital and a noisy, unsupportive home environment?"},
+    {id:72,act:5,pause:false,text:"What's a boundary you wish you'd learned to set twenty years earlier than you actually did?"},
+    {id:73,act:5,pause:false,text:"How do you tell the difference between patience that's productive and patience that's actually avoidance?"},
+    {id:74,act:5,pause:false,text:"What's one thing about instant-gratification culture that you think is a bigger obstacle to focus than anxiety itself?"},
+    {id:75,act:5,pause:true,text:"If someone forgets everything else from this conversation, what's the one sentence you want them to remember tomorrow morning?"}
+  ];
+
+  const SOURCES = [
+    { pub:'Wikipedia', badge:'Reference', title:'Rhonda Byrne', note:'General biographical reference — birth, family, television career, and bibliography.', url:'https://en.wikipedia.org/wiki/Rhonda_Byrne' },
+    { pub:'Wikipedia', badge:'Reference', title:'The Secret (2006 film)', note:'Production credits, release history, budget and box office for the original documentary.', url:'https://en.wikipedia.org/wiki/The_Secret_(2006_film)' },
+    { pub:'TIME', badge:'Feature', title:'The Secret\'s Rhonda Byrne — Top 10 Oprah Protégés', note:'TIME\'s framing of Byrne\'s rise via Oprah\'s two 2006 episodes on the book and film.', url:'https://content.time.com/time/specials/packages/article/0,28804,1944527_1944528_1944309,00.html' },
+    { pub:'IMDb', badge:'Biography', title:'Rhonda Byrne — Biography', note:'Studio-sourced biography, including her own account of first reading Wattles\' book.', url:'https://m.imdb.com/name/nm0126279/bio/' },
+    { pub:'TheSecret.tv', badge:'Official', title:'Rhonda Byrne\'s Biography', note:'Official site biography — career timeline, bibliography, and sales figures as reported by the publisher.', url:'https://www.thesecret.tv/rhonda-byrnes-biography/' },
+    { pub:'Salon', badge:'Criticism', title:'Oprah\'s Ugly Secret (2007)', note:'A contemporaneous, sharply critical take on The Secret\'s marketing and philosophy.', url:'https://www.salon.com/2007/03/05/the_secret/' },
+    { pub:'HarperCollins / PR Newswire', badge:'Publisher', title:'The Greatest Secret — On-Sale Announcement', note:'Publisher release detailing the 2020 pivot toward non-duality and its featured teachers.', url:'https://www.prnewswire.com/news-releases/long-awaited-book-by-rhonda-byrne-bestselling-author-of-the-secret-on-sale-today-301179367.html' },
+    { pub:'The School of Greatness (Lewis Howes)', badge:'Interview', title:'Rhonda Byrne on the $2M Debt, in Her Own Words', note:'Recent on-record interview in which Byrne describes maxing her credit lines and mortgaging her home.', url:'https://lewishowes.com/podcast/rhonda-byrne-the-real-truth-about-money-manifestation-the-law-of-attraction/' }
+  ];
+
+  /* ---------------- RENDER: TIMELINE ---------------- */
+
+  const timelineContainer = document.getElementById('timeline-container');
+
+  function yearSortValue(y){
+    const m = String(y).match(/\d{4}/);
+    return m ? parseInt(m[0], 10) : 0;
+  }
+
+  function renderTimeline(filter){
+    timelineContainer.querySelectorAll('.timeline-item').forEach(n => n.remove());
+    TIMELINE.forEach((item, idx) => {
+      const show = filter === 'all' || item.category === filter;
+      const el = document.createElement('div');
+      el.className = `timeline-item relative pb-9 last:pb-0 tone-${item.tone} ${show ? '' : 'hidden-item'}`;
+      el.dataset.year = yearSortValue(item.year);
+      el.dataset.index = idx;
+      el.innerHTML = `
+        <span class="ledger-node absolute -left-8 top-1.5 w-3 h-3 rounded-full tone-dot"></span>
+        <div class="pl-2 border-l-2 tone-border ml-[-1px]">
+          <div class="pl-4">
+            <p class="font-mono text-xs tone-text mb-1">${item.year} <span class="text-parchment-dim">· ${labelFor(item.category)}</span></p>
+            <h3 class="font-display text-lg md:text-xl mb-1.5 leading-snug">${item.title}</h3>
+            <p class="text-sm text-parchment/80 leading-relaxed">${item.body}</p>
+          </div>
+        </div>
+      `;
+      timelineContainer.appendChild(el);
+    });
+  }
+
+  function labelFor(cat){
+    return { career:'Career', film:'Film Production', philosophy:'Philosophy', books:'Books' }[cat] || cat;
+  }
+
+  document.getElementById('timeline-filters').addEventListener('click', (e) => {
+    const btn = e.target.closest('.pill');
+    if(!btn) return;
+    document.querySelectorAll('#timeline-filters .pill').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    renderTimeline(btn.dataset.filter);
+  });
+
+  renderTimeline('all');
+
+  // year slider scrubbing
+  const slider = document.getElementById('year-slider');
+  slider.addEventListener('input', () => {
+    const target = parseInt(slider.value, 10);
+    let closest = null, closestDiff = Infinity;
+    timelineContainer.querySelectorAll('.timeline-item:not(.hidden-item)').forEach(el => {
+      const diff = Math.abs(parseInt(el.dataset.year, 10) - target);
+      if(diff < closestDiff){ closestDiff = diff; closest = el; }
+    });
+    if(closest){
+      closest.scrollIntoView({ block:'center', behavior:'smooth' });
+      closest.classList.remove('flash');
+      void closest.offsetWidth;
+      closest.classList.add('flash');
+    }
+  });
+
+  /* ---------------- RENDER: QUESTIONS ---------------- */
+
+  const actFiltersEl = document.getElementById('act-filters');
+  ACTS.forEach(act => {
+    const b = document.createElement('button');
+    b.className = 'pill';
+    b.dataset.act = act.id;
+    b.innerHTML = `${act.short} <span class="text-parchment-dim">(${act.range})</span>`;
+    actFiltersEl.appendChild(b);
+  });
+
+  let currentAct = 'all';
+  let currentSearch = '';
+
+  const qContainer = document.getElementById('questions-container');
+  const qCount = document.getElementById('q-count');
+
+  function actMeta(id){ return ACTS.find(a => a.id === id); }
+
+  function renderQuestions(){
+    const term = currentSearch.trim().toLowerCase();
+    const filtered = QUESTIONS.filter(q => {
+      const actOk = currentAct === 'all' || q.act === currentAct;
+      const meta = actMeta(q.act);
+      const searchOk = !term || q.text.toLowerCase().includes(term) || meta.title.toLowerCase().includes(term);
+      return actOk && searchOk;
+    });
+
+    qCount.textContent = `${filtered.length} of 75 questions`;
+
+    qContainer.innerHTML = '';
+    let lastAct = null;
+
+    filtered.forEach(q => {
+      if(q.act !== lastAct){
+        lastAct = q.act;
+        const meta = actMeta(q.act);
+        const header = document.createElement('div');
+        header.className = 'pt-6 first:pt-0 pb-1';
+        header.innerHTML = `
+          <p class="font-mono text-[11px] tracking-widest text-gold">${meta.short} · ${meta.range}</p>
+          <h3 class="font-display text-xl md:text-2xl">${meta.title}</h3>
+        `;
+        qContainer.appendChild(header);
+      }
+
+      const card = document.createElement('div');
+      card.className = 'qcard rounded-xl p-5';
+      card.innerHTML = `
+        <div class="flex items-start justify-between gap-4 mb-3">
+          <span class="font-mono text-xs text-gold">Q${String(q.id).padStart(2,'0')}</span>
+          ${q.pause ? `<span class="pause-marker"><span class="wavebar"></span><span class="wavebar"></span><span class="wavebar"></span> let this breathe</span>` : ''}
+        </div>
+        <p class="font-display text-[17px] leading-relaxed text-parchment/95 mb-4">${q.text}</p>
+        <div class="flex justify-end">
+          <button class="copy-btn" data-copy="${q.id}">Copy for notes</button>
+        </div>
+      `;
+      qContainer.appendChild(card);
+    });
+
+    if(filtered.length === 0){
+      qContainer.innerHTML = `<p class="text-sm text-parchment-dim font-mono py-10 text-center">No questions match “${term}.” Try a different keyword.</p>`;
+    }
+  }
+
+  actFiltersEl.addEventListener('click', (e) => {
+    const btn = e.target.closest('.pill');
+    if(!btn) return;
+    document.querySelectorAll('#act-filters .pill').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    currentAct = btn.dataset.act === 'all' ? 'all' : parseInt(btn.dataset.act, 10);
+    renderQuestions();
+  });
+
+  document.getElementById('q-search').addEventListener('input', (e) => {
+    currentSearch = e.target.value;
+    renderQuestions();
+  });
+
+  qContainer.addEventListener('click', (e) => {
+    const btn = e.target.closest('.copy-btn');
+    if(!btn) return;
+    const q = QUESTIONS.find(q => q.id === parseInt(btn.dataset.copy, 10));
+    if(!q) return;
+    navigator.clipboard.writeText(q.text).then(() => {
+      const original = btn.textContent;
+      btn.textContent = 'Copied ✓';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = original; btn.classList.remove('copied'); }, 1400);
+    }).catch(() => {
+      btn.textContent = 'Press ⌘/Ctrl+C';
+      setTimeout(() => { btn.textContent = 'Copy for notes'; }, 1400);
+    });
+  });
+
+  renderQuestions();
+
+  /* ---------------- RENDER: SOURCES ---------------- */
+
+  const sourcesContainer = document.getElementById('sources-container');
+  SOURCES.forEach(s => {
+    const card = document.createElement('a');
+    card.href = s.url;
+    card.target = '_blank';
+    card.rel = 'noopener noreferrer';
+    card.className = 'source-card rounded-xl p-5 block';
+    card.innerHTML = `
+      <div class="flex items-center justify-between mb-3">
+        <span class="font-mono text-[10px] tracking-widest uppercase text-sage border border-sage/40 rounded-full px-2.5 py-1">${s.badge}</span>
+        <svg class="w-3.5 h-3.5 text-parchment-dim" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M7 17L17 7M17 7H7M17 7V17"/></svg>
+      </div>
+      <p class="font-mono text-xs text-parchment-dim mb-1">${s.pub}</p>
+      <h3 class="font-display text-lg mb-2 leading-snug">${s.title}</h3>
+      <p class="text-sm text-parchment/75 leading-relaxed">${s.note}</p>
+    `;
+    sourcesContainer.appendChild(card);
+  });
+
+  /* ---------------- PROGRESS BAR ---------------- */
+
+  const progressBar = document.getElementById('progress-bar');
+  function updateProgress(){
+    const scrollTop = window.scrollY;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const pct = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+    progressBar.style.width = pct + '%';
+  }
+  window.addEventListener('scroll', updateProgress, { passive:true });
+  updateProgress();
+
+  /* ---------------- ACTIVE CHAPTER NAV ---------------- */
+
+  const navLinks = document.querySelectorAll('[data-nav]');
+  const sections = ['prologue','chronology','questions','sources','reels'].map(id => document.getElementById(id));
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if(entry.isIntersecting){
+        navLinks.forEach(l => l.classList.remove('active'));
+        const link = document.querySelector(`[data-nav][href="#${entry.target.id}"]`);
+        if(link) link.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-40% 0px -55% 0px', threshold: 0 });
+
+  sections.forEach(s => { if(s) observer.observe(s); });
+
+})();
+</script>
+</body>
+</html>
