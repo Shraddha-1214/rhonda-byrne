@@ -4,7 +4,7 @@ An interactive, single-page editorial dossier on Rhonda Byrne — from a $2 mill
 
 Static HTML/CSS/JS. No build step, no dependencies to install, no backend.
 
-**[Live demo →](#)** *(add your Vercel URL here after deploying)*
+**[Live demo →](#)** *https://rhonda-byrne.vercel.app*
 
 ---
 
